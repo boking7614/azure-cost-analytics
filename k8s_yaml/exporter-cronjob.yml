@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: azure-cost-request-cronjob
+  namespace: sysagecloud-msp-ns
+spec:
+  schedule: "* 2 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: sysage-az-cost-toinflux
+            image: sysagep500.azurecr.io/azure-cost/influxdb:880ea54
+            imagePullPolicy: IfNotPresent
+            env:
+            - name: AZURE_SUBSCRIPTION_ID
+              valueFrom:
+                secretKeyRef:
+                  name: azure-config
+                  key: AZURE_SUBSCRIPTION_ID
+            - name: AZURE_TENANT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: azure-config
+                  key: AZURE_TENANT_ID
+            - name: AZURE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: azure-config
+                  key: AZURE_CLIENT_ID
+            - name: AZURE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: azure-config
+                  key: AZURE_CLIENT_SECRET
+          nodeSelector:
+            kubernetes.azure.com/mode: user
+          restartPolicy: Never
